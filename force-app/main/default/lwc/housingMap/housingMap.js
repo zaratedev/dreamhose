@@ -1,3 +1,29 @@
-import { LightningElement } from 'lwc';
+import { LightningElement, wire } from 'lwc';
+import getHouses from '@salesforce/apex/HouseService.getRecords';
 
-export default class HousingMap extends LightningElement {}
+export default class HousingMap extends LightningElement {
+    mapMarkers;
+    error;
+
+    @wire(getHouses)
+    wiredHouses({ error, data }) {
+        if (data) {
+            console.log(data);
+            this.mapMarkers = data.map((element) => {
+                return {
+                    location: {
+                        Street: element.Address__c,
+                        City: element.City__c,
+                        State: element.State__c,
+                    },
+                    title: element.Name
+                };
+            });
+
+            this.error = undefined;
+        } else if (error) {
+            this.error = error;
+            this.mapMarkers = undefined;
+        }
+    }
+}
